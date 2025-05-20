@@ -4,14 +4,16 @@ import socket
 
 def iot_simulate():
     
-    # the command pairs
-    with open('./commandPairs.json', 'r') as file:
-        commandPairs = json.load(file)
-
     # the configuration data
     with open('./config.json', 'r') as file:
         config = json.load(file)
 
+    # the command pairs
+    with open(config["commandPairs"], 'r') as file:
+        commandPairs = json.load(file)
+    # normalize all of the command pair messages
+    for commandPair in commandPairs:
+        commandPair["message"] = commandPair["message"].encode('utf-8').decode('unicode_escape')
     server_socket = socket.socket() # get instance
     #bind to the socket
     server_socket.bind((config["host"], config["port"])) # bind the host and port
@@ -33,13 +35,17 @@ def iot_simulate():
             conn.send(config["unauthorizedResponse"].encode())
         # if there are command pairs
         elif commandPairs:
+            matchFound = False
             # loop through the command pairs looking for a match
             for commandPair in commandPairs:
                 if msg==commandPair["message"]:
+                    matchFound = True
                     # if a match is found send the response
                     conn.send(commandPair["response"].encode())
                     print("Responding with: " + commandPair["response"])
                     break
+            if not matchFound:
+                conn.send(("No response found to message: "+msg).encode())
     while True:
         readable, _, _ = select.select(inputs, [], [], 10)
         for s in readable:
@@ -59,7 +65,7 @@ def iot_simulate():
                     # if the byte is a carriage return
                     if byte == b'\r':
                         # parse the message
-                        parse_message(buffers[s].decode(), s)
+                        parse_message(buffers[s].decode('utf-8'), s)
                         # clear the buffer
                         buffers[s] = b''
                 except (socket.error, ConnectionResetError):
