@@ -1,0 +1,4 @@
+[
+  {"message":"\\Turn On\r","response":"Device is on\r\n"},
+  {"message":"\\Turn Off\r","response":"Device is off\r\n"}
+]
