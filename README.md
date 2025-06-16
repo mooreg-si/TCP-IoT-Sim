@@ -11,12 +11,23 @@ Configuration is through a config.json file in the root folder. This file should
 | host                 | The IP address that this server should listen on.                                                         |
 | port                 | The communication port that the server should listen on.                                                  |
 | commandPairs         | The path to the file to use for the command response pairs                                                |
-| wc-fixed             | The wildcard character to use for a single character (not implemented yet)                                |
-| wc-variable          | The wildcard character to use for a variable length group of characters (not implemented yet)             |
+| stateVariable        | The character used to identify state variables within a command or response                               |
 | authRequired         | If authentication is required for this device                                                             |
 | passwordString       | The password string**RECEIVED FROM THE CONTROL SYSTEM** in response to a request for authentication |
 | authSuccess          | The string sent**FROM THE SERVER** to request authentication                                       |
 | unauthorizedResponse | The string sent**FROM THE SERVER** in response to a message without authentication                 |
+
+## State Variables
+
+State variables can be used to store a value sent by the client and repeat it back later. This also allows for command messages that include a state without using multiple messages for each possible state. For example, if a command is sent to turn a display on, later status requests should report that display on. If a command is sent to switch the input to HDMI3, later status requests should report the current input as HDMI3.
+
+### State Variables in Messages
+
+State variables in command messages take the form `#01`. The first `#` character is the configured stateVariable character and identifies the location of the variable in the string. The second integer character is the index of the state variable and can be 0-9. The third integer character is the length of the variable, and can be 1-9. For the received command message `POWR01\r`, the message string stored in the command response table would be `POWR0#01\r`.
+
+### State Variables in Responses
+
+State variables in responses take the form `#0`. The first `#` character is the configured stateVariable character and identifies the location of the variable in the string. The second integer character is the index of the state variable and can be 0-9. To send the response message `POWR01\r`, the message string stored in the command response table would be `POWR0#0\r`.
 
 ## Command Tables
 

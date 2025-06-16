@@ -1,4 +1,5 @@
 import json
+import re
 import select
 import socket
 
@@ -23,6 +24,8 @@ def iot_simulate():
     buffers = {}
     # if each connection is authorized to connect
     authorizations = {}
+    # Array of state variables
+    stateVariables = ["0"]*10
 
     def parse_message(msg, conn):
         print(("Message Received: "+msg).encode())
@@ -38,10 +41,43 @@ def iot_simulate():
             matchFound = False
             # loop through the command pairs looking for a match
             for commandPair in commandPairs:
-                if msg==commandPair["message"]:
+                savedMessage = commandPair["message"]
+                # find a state variable in the message
+                varIdx = savedMessage.find(config["stateVariable"])
+                # index in the array of the variable
+                arrIdx = -1
+                # if there is a state variable in the message
+                if varIdx != -1:
+                    # get the number of characters
+                    varChars = int(savedMessage[varIdx+2])
+                    # Store in the index in the array where the variable is\
+                    arrIdx = int(savedMessage[varIdx+1])
+                    # Replace the variable with wildcard characters
+                    savedMessage = savedMessage[:varIdx] + "[a-zA-Z0-9]"*varChars+ savedMessage[varIdx+3:]
+                # look for question mark to be escaped
+                qIdx = savedMessage.find('?')
+                if qIdx != -1:
+                    # insert the escape character
+                    savedMessage = savedMessage[:qIdx]+"\\"+savedMessage[qIdx:]
+                # look for a match with the message
+                match = re.fullmatch(r""+savedMessage, msg)
+                # if a match is found
+                if match:
                     matchFound = True
+                    # if there was a state variable in the message
+                    if varIdx != -1:
+                        # save the state variable
+                        stateVariables[arrIdx] = msg[varIdx:varIdx+varChars]
+                    # get the response
+                    response = commandPair["response"]
+                    # if there is a state variable in the response
+                    varIdx = response.find(config["stateVariable"])
+                    # if there is a state variable in the response
+                    if varIdx != -1:
+                        # replace the state variable with the value
+                        response = response[:varIdx] + stateVariables[int(response[varIdx+1])] + response[varIdx+2:]
                     # if a match is found send the response
-                    conn.send(commandPair["response"].encode())
+                    conn.send(response.encode())
                     print("Responding with: " + commandPair["response"])
                     break
             if not matchFound:

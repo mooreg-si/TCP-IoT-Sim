@@ -1,9 +1,8 @@
 {
     "host":"127.0.0.1", 
     "port":23,
-    "commandPairs":"./Extron-SIS.json",
-    "wc-fixed":"#",
-    "wc-variable":"?",
+    "commandPairs":"./ExampleCommandResponse.json",
+    "stateVariable":"#",
     "authRequired":true,
     "passwordString":"password12345\r",
     "authSuccess":"\r\nLogin Success\r\n",
