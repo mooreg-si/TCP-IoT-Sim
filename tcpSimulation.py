@@ -53,12 +53,27 @@ def iot_simulate():
                     # Store in the index in the array where the variable is\
                     arrIdx = int(savedMessage[varIdx+1])
                     # Replace the variable with wildcard characters
-                    savedMessage = savedMessage[:varIdx] + "[a-zA-Z0-9]"*varChars+ savedMessage[varIdx+3:]
+                    savedMessage = savedMessage[:varIdx] + "[a-zA-Z0-9\.]{"+str(varChars)+"}"+savedMessage[varIdx+3:]
                 # look for question mark to be escaped
                 qIdx = savedMessage.find('?')
                 if qIdx != -1:
                     # insert the escape character
                     savedMessage = savedMessage[:qIdx]+"\\"+savedMessage[qIdx:]
+                # look for * to be escaped
+                aIdx = savedMessage.find('*')
+                if aIdx != -1:
+                    #insert the escape character
+                    savedMessage = savedMessage[:aIdx]+"\\"+savedMessage[aIdx:]
+                # look for $ to be escaped 
+                dIdx = savedMessage.find('$')
+                if dIdx != -1:
+                    #insert the escape character
+                    savedMessage = savedMessage[:dIdx]+"\\"+savedMessage[dIdx:]
+                # look for period to be escaped 
+                pIdx = savedMessage.find('.')
+                if pIdx != -1:
+                    #insert the escape character
+                    savedMessage = savedMessage[:pIdx]+"\\"+savedMessage[pIdx:]
                 # look for a match with the message
                 match = re.fullmatch(r""+savedMessage, msg)
                 # if a match is found
